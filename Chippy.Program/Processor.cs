@@ -25,7 +25,7 @@
 
     public void Reset()
     {
-      _memory.Clear();
+      _memory.Reset();
       _window.Clear();
 
       _programCounter = 0x200;
@@ -73,6 +73,8 @@
           return _instructionFactory.Instruction3XNN(x, nn);
         case 0x4000:
           return _instructionFactory.Instruction4XNN(x, nn);
+        case 0x5000:
+          return _instructionFactory.Instruction5XY0(x, y);
         case 0x6000:
           return _instructionFactory.Instruction6XNN(x, nn);
         case 0x7000:
@@ -83,16 +85,38 @@
           return _instructionFactory.Instruction8XY2(x, y);
         case 0x8000 when (opcode & 0x000F) == 0x4:
           return _instructionFactory.Instruction8XY4(x, y);
+        case 0x8000 when (opcode & 0x000F) == 0x5:
+          return _instructionFactory.Instruction8XY5(x, y);
+        case 0x8000 when (opcode & 0x000F) == 0x6:
+          return _instructionFactory.Instruction8XY6(x, y);
         case 0x8000 when (opcode & 0x000F) == 0xE:
           return _instructionFactory.Instruction8XYE(x, y);
+        case 0x9000:
+          return _instructionFactory.Instruction9XY0(x, y);
         case 0xA000:
           return _instructionFactory.InstructionANNN(nnn);
         case 0xC000:
           return _instructionFactory.InstructionCXNN(x, nn);
         case 0xD000:
           return _instructionFactory.InstructionDXYN(x, y, n);
+        case 0xE000 when (opcode & 0x00FF) == 0x9E:
+          return _instructionFactory.InstructionEX9E(x);
+        case 0xE000 when (opcode & 0x00FF) == 0xA1:
+          return _instructionFactory.InstructionEXA1(x);
         case 0xF000 when (opcode & 0x00FF) == 0x1E:
           return _instructionFactory.InstructionFX1E(x);
+        case 0xF000 when (opcode & 0x00FF) == 0x07:
+          return _instructionFactory.InstructionFX07(x);
+        case 0xF000 when (opcode & 0x00FF) == 0x0A:
+          return _instructionFactory.InstructionFX0A(x);
+        case 0xF000 when (opcode & 0x00FF) == 0x15:
+          return _instructionFactory.InstructionFX15(x);
+        case 0xF000 when (opcode & 0x00FF) == 0x29:
+          return _instructionFactory.InstructionFX29(x);
+        case 0xF000 when (opcode & 0x00FF) == 0x33:
+          return _instructionFactory.InstructionFX33(x);
+        case 0xF000 when (opcode & 0x00FF) == 0x55:
+          return _instructionFactory.InstructionFX55(x);
         case 0xF000 when (opcode & 0x00FF) == 0x65:
           return _instructionFactory.InstructionFX65(x);
         default:

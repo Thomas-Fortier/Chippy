@@ -73,6 +73,17 @@
       });
     }
 
+    public Instruction Instruction5XY0(byte x, byte y)
+    {
+      return new Instruction("5XY0", "Skip next instruction if Vx = Vy", () =>
+      {
+        if (_processor.GetVRegister(x) == _processor.GetVRegister(y))
+        {
+          _processor.IncrementProgramCounter(2);
+        }
+      });
+    }
+
     public Instruction Instruction6XNN(byte x, byte nn)
     {
       return new Instruction("6XNN", "Put NN into Vx", () =>
@@ -116,12 +127,42 @@
       });
     }
 
+    public Instruction Instruction8XY5(byte x, byte y)
+    {
+      return new Instruction("8XY5", "Set Vx = Vx - Vy, set VF = NOT borrow", () =>
+      {
+        _processor.SetVRegister(0xF, _processor.GetVRegister(x) > _processor.GetVRegister(y) ? (byte)1 : (byte)0);
+        byte result = (byte)(_processor.GetVRegister(x) - _processor.GetVRegister(y));
+        _processor.SetVRegister(x, result);
+      });
+    }
+
+    public Instruction Instruction8XY6(byte x, byte y)
+    {
+      return new Instruction("8XY6", "Set Vx = Vx SHR 1", () =>
+      {
+        _processor.SetVRegister(0xF, (x & 0x0000000F) == 1 ? (byte)1 : (byte)0);
+        _processor.SetVRegister(x, (byte)(_processor.GetVRegister(x) / 2));
+      });
+    }
+
     public Instruction Instruction8XYE(byte x, byte y)
     {
       return new Instruction("8XYE", "Set Vx = Vx SHL 1", () =>
       {
         _processor.SetVRegister(0xF, (x & 0xF0000000) == 1 ? (byte)1 : (byte)0);
         _processor.SetVRegister(x, (byte)(_processor.GetVRegister(x) * 2));
+      });
+    }
+
+    public Instruction Instruction9XY0(byte x, byte y)
+    {
+      return new Instruction("9XY0", "Skip next instruction if Vx != Vy", () =>
+      {
+        if (_processor.GetVRegister(x) != _processor.GetVRegister(y))
+        {
+          _processor.IncrementProgramCounter(2);
+        }
       });
     }
 
@@ -181,12 +222,141 @@
       });
     }
 
+    public Instruction InstructionEX9E(byte x)
+    {
+      return new Instruction("EX9E", "Skip next instruction if key with the value of Vx is pressed", () =>
+      {
+        if (_processor.GetVRegister(x) == 1)
+        {
+          _processor.IncrementProgramCounter(2);
+        }
+      });
+    }
+
+    public Instruction InstructionEXA1(byte x)
+    {
+      return new Instruction("EXA1", "Skip next instruction if key with the value of Vx is not pressed", () =>
+      {
+        if (_processor.GetVRegister(x) != 1)
+        {
+          _processor.IncrementProgramCounter(2);
+        }
+      });
+    }
+
+    public Instruction InstructionFX07(byte x)
+    {
+      return new Instruction("FX07", "Set Vx = delay timer value", () =>
+      {
+        _processor.SetVRegister(x, _processor.GetDelayTimer());
+      });
+    }
+
+    public Instruction InstructionFX0A(byte x)
+    {
+      return new Instruction("FX0A", "Wait for a key press, store the value of the key in Vx", () =>
+      {
+        var keyInfo = Console.ReadKey();
+        byte key = 0x0;
+
+        switch (keyInfo.Key)
+        {
+          case ConsoleKey.D1:
+            key = 0x1;
+            break;
+          case ConsoleKey.D2:
+            key = 0x1;
+            break;
+          case ConsoleKey.D3:
+            key = 0x1;
+            break;
+          case ConsoleKey.D4:
+            key = 0x1;
+            break;
+          case ConsoleKey.D5:
+            key = 0x1;
+            break;
+          case ConsoleKey.D6:
+            key = 0x1;
+            break;
+          case ConsoleKey.D7:
+            key = 0x1;
+            break;
+          case ConsoleKey.D8:
+            key = 0x1;
+            break;
+          case ConsoleKey.D9:
+            key = 0x1;
+            break;
+          case ConsoleKey.A:
+            key = 0xA;
+            break;
+          case ConsoleKey.B:
+            key = 0xB;
+            break;
+          case ConsoleKey.C:
+            key = 0xC;
+            break;
+          case ConsoleKey.D:
+            key = 0xD;
+            break;
+          case ConsoleKey.E:
+            key = 0xE;
+            break;
+          case ConsoleKey.F:
+            key = 0xF;
+            break;
+        }
+
+        _processor.SetVRegister(x, key);
+      });
+    }
+
+    public Instruction InstructionFX15(byte x)
+    {
+      return new Instruction("FX15", "Set delay timer = Vx", () =>
+      {
+        _processor.SetDelayTimer(_processor.GetVRegister(x));
+      });
+    }
+
+    public Instruction InstructionFX29(byte x)
+    {
+      return new Instruction("FX29", "Set I = location of sprite for digit Vx", () =>
+      {
+        _processor.SetIndexRegister((ushort)(_processor.GetVRegister(x) * 5));
+      });
+    }
+
     public Instruction InstructionFX1E(byte x)
     {
       return new Instruction("FX1E", "Set I = I + Vx", () =>
       {
         var result = _processor.GetIndexRegister() + _processor.GetVRegister(x);
-        _processor.SetIndexRegister((ushort) result);
+        _processor.SetIndexRegister((ushort)result);
+      });
+    }
+
+    public Instruction InstructionFX33(byte x)
+    {
+      return new Instruction("FX33", "Store BCD representation of Vx in memory locations I, I+1, and I+2", () =>
+      {
+        var number = _processor.GetVRegister(x);
+
+        _memory.Write(_processor.GetIndexRegister(), (byte)(number / 100));
+        _memory.Write(_processor.GetIndexRegister() + 1, (byte)((number / 10) % 10));
+        _memory.Write(_processor.GetIndexRegister() + 2, (byte)((number % 100) % 10));
+      });
+    }
+
+    public Instruction InstructionFX55(byte x)
+    {
+      return new Instruction("FX55", "Store registers V0 through Vx in memory starting at location I", () =>
+      {
+        for (int index = 0; index <= x; index++)
+        {
+          _memory.Write(_processor.GetIndexRegister() + index, _processor.GetVRegister(x));
+        }
       });
     }
 
