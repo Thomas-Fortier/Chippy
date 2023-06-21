@@ -2,14 +2,15 @@
 {
   internal class Instruction
   {
+    public string Id { get; }
+
     private readonly string _description;
-    private readonly string _id;
     private readonly Action _logic;
 
     public Instruction(string id, string description, Action logic)
     {
       _description = description;
-      _id = id;
+      Id = id;
       _logic = logic;
     }
 
@@ -20,7 +21,7 @@
 
     public override string ToString()
     {
-      return $"{_id}: {_description}";
+      return $"{Id}: {_description}";
     }
   }
 }

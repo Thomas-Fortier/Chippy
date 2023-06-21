@@ -2,6 +2,8 @@
 {
   internal class Processor
   {
+    public Keypad Keypad { get; }
+
     private byte[] _vRegisters;
     private ushort IndexRegister;
 
@@ -13,14 +15,31 @@
     private readonly Window _window;
     private readonly InstructionFactory _instructionFactory;
 
-    public Processor(Memory memory, Window window, byte[] vRegisters)
+    public Processor(Memory memory, Window window, Keypad keypad, byte[] vRegisters)
     {
       _memory = memory;
       _window = window;
+      Keypad = keypad;
       _vRegisters = vRegisters;
       _instructionFactory = new InstructionFactory(this, memory, window);
 
       Reset();
+      MakeSound();
+    }
+
+    private Task MakeSound()
+    {
+      return Task.Factory.StartNew(() =>
+      {
+        while (true)
+        {
+          if (_soundTimer != 0)
+          {
+            Console.Beep();
+            _soundTimer = 0;
+          }
+        }
+      });
     }
 
     public void Reset()
@@ -81,8 +100,12 @@
           return _instructionFactory.Instruction7XNN(x, nn);
         case 0x8000 when (opcode & 0x000F) == 0x0:
           return _instructionFactory.Instruction8XY0(x, y);
+        case 0x8000 when (opcode & 0x000F) == 0x1:
+          return _instructionFactory.Instruction8XY1(x, y);
         case 0x8000 when (opcode & 0x000F) == 0x2:
           return _instructionFactory.Instruction8XY2(x, y);
+        case 0x8000 when (opcode & 0x000F) == 0x3:
+          return _instructionFactory.Instruction8XY3(x, y);
         case 0x8000 when (opcode & 0x000F) == 0x4:
           return _instructionFactory.Instruction8XY4(x, y);
         case 0x8000 when (opcode & 0x000F) == 0x5:
@@ -111,6 +134,8 @@
           return _instructionFactory.InstructionFX0A(x);
         case 0xF000 when (opcode & 0x00FF) == 0x15:
           return _instructionFactory.InstructionFX15(x);
+        case 0xF000 when (opcode & 0x00FF) == 0x18:
+          return _instructionFactory.InstructionFX18(x);
         case 0xF000 when (opcode & 0x00FF) == 0x29:
           return _instructionFactory.InstructionFX29(x);
         case 0xF000 when (opcode & 0x00FF) == 0x33:
@@ -172,6 +197,11 @@
     public byte GetDelayTimer()
     {
       return _delayTimer;
+    }
+
+    public void SetSoundTimer(byte value)
+    {
+      _soundTimer = value;
     }
 
     public void Execute(Instruction instruction)

@@ -2,13 +2,16 @@
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using System.Drawing;
+using static System.Runtime.CompilerServices.RuntimeHelpers;
 
 namespace Chippy.Program
 {
   internal class Window : GameWindow
   {
-    public delegate void FrameRendered();
-    public event FrameRendered? OnFrameRendered;
+    public delegate void WindowEvent();
+    public event WindowEvent? OnFrameRendered;
+    public event EventHandler<byte> OnKeyPressed;
+    public event EventHandler<byte> OnKeyReleased;
 
     public int NativeWidth { get; } = 64;
     public int NativeHeight { get; } = 32;
@@ -51,6 +54,40 @@ namespace Chippy.Program
       GL.Clear(ClearBufferMask.ColorBufferBit);
 
       SwapBuffers();
+    }
+
+    protected override void OnKeyDown(KeyboardKeyEventArgs e)
+    {
+      base.OnKeyDown(e);
+      byte keyCode;
+
+      try
+      {
+        keyCode = Keypad.GetKeyCode(e);
+      }
+      catch (NotImplementedException)
+      {
+        return;
+      }
+
+      OnKeyPressed?.Invoke(this, keyCode);
+    }
+
+    protected override void OnKeyUp(KeyboardKeyEventArgs e)
+    {
+      base.OnKeyUp(e);
+      byte keyCode;
+
+      try
+      {
+        keyCode = Keypad.GetKeyCode(e);
+      }
+      catch (NotImplementedException)
+      {
+        return;
+      }
+
+      OnKeyReleased?.Invoke(this, keyCode);
     }
 
     protected override void OnRenderFrame(FrameEventArgs e)

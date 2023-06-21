@@ -11,7 +11,7 @@
       _processor.LoadRom(data);
 
       _window = window;
-      _window.OnFrameRendered += new Window.FrameRendered(ExecuteCycle);
+      _window.OnFrameRendered += new Window.WindowEvent(ExecuteCycle);
     }
 
     public void ExecuteCycle()
@@ -22,7 +22,7 @@
 
       _processor.Execute(instruction);
 
-      Thread.Sleep(16);
+      Thread.Sleep(2);
     }
 
     public void Start()

@@ -23,8 +23,12 @@ namespace Chippy.Programe
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Trip8 Demo (2008) [Revival Studios].ch8");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Maze [David Winter, 199x].ch8");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Stars [Sergey Naydenov, 2010].ch8");
-      byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Breakout [Carmelo Cortez, 1979].ch8");
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Breakout [Carmelo Cortez, 1979].ch8");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Pong (1 player).ch8");
+
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\1-chip8-logo (1).8o");
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\2-ibm-logo.8o");
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\test_opcode.ch8");
       StringBuilder sb = new StringBuilder();
       List<byte> bytes = new List<byte>();
 
@@ -42,10 +46,22 @@ namespace Chippy.Programe
     { 
       var window = CreateWindow();
       var memory = new Memory(new byte[4096], new Stack<ushort>());
-      var processor = new Processor(memory, window, new byte[16]);
+      var keypad = CreateKeypad(window);
+      var processor = new Processor(memory, window, keypad, new byte[16]);
       var emulator = new Emulator(processor, window, data);
 
       return emulator;
+    }
+
+    private static Keypad CreateKeypad(Window window)
+    {
+      var keys = new byte[]
+      {
+        0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9,
+        0xA, 0xB, 0xC, 0xD, 0xE, 0xF
+      };
+
+      return new Keypad(keys, window);
     }
 
     private static Window CreateWindow()

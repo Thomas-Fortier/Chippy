@@ -6,11 +6,26 @@
     private readonly Memory _memory;
     private readonly Window _window;
 
+    private byte? _pressedKey;
+
     public InstructionFactory(Processor processor, Memory memory, Window window)
     {
       _processor = processor;
       _memory = memory;
       _window = window;
+
+      _window.OnKeyPressed += OnKeyPress;
+      _window.OnKeyReleased += OnKeyRelease;
+    }
+
+    private void OnKeyPress(object? sender, byte key)
+    {
+      _pressedKey = key;
+    }
+
+    private void OnKeyRelease(object? sender, byte _)
+    {
+      _pressedKey = null;
     }
 
     public Instruction Instruction0NNN(ushort nnn)
@@ -109,6 +124,14 @@
       });
     }
 
+    public Instruction Instruction8XY1(byte x, byte y)
+    {
+      return new Instruction("8XY0", "Set Vx = Vx | Vy", () =>
+      {
+        _processor.SetVRegister(x, (byte)(_processor.GetVRegister(x) | _processor.GetVRegister(y)));
+      });
+    }
+
     public Instruction Instruction8XY2(byte x, byte y)
     {
       return new Instruction("8XY2", "Set Vx = Vx AND Vy", () =>
@@ -118,12 +141,22 @@
       });
     }
 
+    public Instruction Instruction8XY3(byte x, byte y)
+    {
+      return new Instruction("8XY2", "Set Vx = Vx AND Vy", () =>
+      {
+        byte result = (byte)(_processor.GetVRegister(x) ^ _processor.GetVRegister(y));
+        _processor.SetVRegister(x, result);
+      });
+    }
+
     public Instruction Instruction8XY4(byte x, byte y)
     {
       return new Instruction("8XY4", "Set Vx = Vx + Vy, set VF = carry", () =>
       {
         int result = (byte)(_processor.GetVRegister(x) + _processor.GetVRegister(y));
-        _processor.SetVRegister(0xF, result > byte.MaxValue ? (byte) 1 : (byte) 0); 
+        _processor.SetVRegister(0xF, result > byte.MaxValue ? (byte) 1 : (byte) 0);
+        _processor.SetVRegister(x, (byte)result);
       });
     }
 
@@ -226,7 +259,7 @@
     {
       return new Instruction("EX9E", "Skip next instruction if key with the value of Vx is pressed", () =>
       {
-        if (_processor.GetVRegister(x) == 1)
+        if (_processor.Keypad.IsKeyPressed(_processor.GetVRegister(x)))
         {
           _processor.IncrementProgramCounter(2);
         }
@@ -237,7 +270,7 @@
     {
       return new Instruction("EXA1", "Skip next instruction if key with the value of Vx is not pressed", () =>
       {
-        if (_processor.GetVRegister(x) != 1)
+        if (!_processor.Keypad.IsKeyPressed(_processor.GetVRegister(x)))
         {
           _processor.IncrementProgramCounter(2);
         }
@@ -256,59 +289,13 @@
     {
       return new Instruction("FX0A", "Wait for a key press, store the value of the key in Vx", () =>
       {
-        var keyInfo = Console.ReadKey();
-        byte key = 0x0;
-
-        switch (keyInfo.Key)
+        while (_pressedKey == null)
         {
-          case ConsoleKey.D1:
-            key = 0x1;
-            break;
-          case ConsoleKey.D2:
-            key = 0x1;
-            break;
-          case ConsoleKey.D3:
-            key = 0x1;
-            break;
-          case ConsoleKey.D4:
-            key = 0x1;
-            break;
-          case ConsoleKey.D5:
-            key = 0x1;
-            break;
-          case ConsoleKey.D6:
-            key = 0x1;
-            break;
-          case ConsoleKey.D7:
-            key = 0x1;
-            break;
-          case ConsoleKey.D8:
-            key = 0x1;
-            break;
-          case ConsoleKey.D9:
-            key = 0x1;
-            break;
-          case ConsoleKey.A:
-            key = 0xA;
-            break;
-          case ConsoleKey.B:
-            key = 0xB;
-            break;
-          case ConsoleKey.C:
-            key = 0xC;
-            break;
-          case ConsoleKey.D:
-            key = 0xD;
-            break;
-          case ConsoleKey.E:
-            key = 0xE;
-            break;
-          case ConsoleKey.F:
-            key = 0xF;
-            break;
+          _window.ProcessEvents();
         }
 
-        _processor.SetVRegister(x, key);
+        _processor.Keypad.EnableKey(this, _pressedKey.Value);
+        _processor.SetVRegister(x, _pressedKey.Value);
       });
     }
 
@@ -317,6 +304,14 @@
       return new Instruction("FX15", "Set delay timer = Vx", () =>
       {
         _processor.SetDelayTimer(_processor.GetVRegister(x));
+      });
+    }
+
+    public Instruction InstructionFX18(byte x)
+    {
+      return new Instruction("FX18", "Set sound timer = Vx", () =>
+      {
+        _processor.SetSoundTimer(_processor.GetVRegister(x));
       });
     }
 
