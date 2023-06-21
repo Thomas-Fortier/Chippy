@@ -179,6 +179,16 @@
       });
     }
 
+    public Instruction Instruction8XY7(byte x, byte y)
+    {
+      return new Instruction("8XY7", "Set Vx = Vy - Vx, set VF = NOT borrow", () =>
+      {
+        var difference = _processor.GetVRegister(y) - _processor.GetVRegister(x);
+        _processor.SetVRegister(x, (byte)(difference & 0xFF));
+        _processor.SetVRegister(0xF, (byte)(difference > 0 ? 1 : 0));
+      });
+    }
+
     public Instruction Instruction8XYE(byte x, byte y)
     {
       return new Instruction("8XYE", "Set Vx = Vx SHL 1", () =>
@@ -204,6 +214,15 @@
       return new Instruction("ANNN", "Put NNN into I", () =>
       {
         _processor.SetIndexRegister(nnn);
+      });
+    }
+
+    public Instruction InstructionBNNN(ushort nnn)
+    {
+      return new Instruction("BNNN", "Jump with offset", () =>
+      {
+        var jumpLocation = (ushort)(_processor.GetVRegister(0x0) + nnn);
+        _processor.SetProgramCounter(jumpLocation);
       });
     }
 

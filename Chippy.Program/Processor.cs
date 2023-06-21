@@ -112,12 +112,16 @@
           return _instructionFactory.Instruction8XY5(x, y);
         case 0x8000 when (opcode & 0x000F) == 0x6:
           return _instructionFactory.Instruction8XY6(x, y);
+        case 0x8000 when (opcode & 0x000F) == 0x7:
+          return _instructionFactory.Instruction8XY7(x, y);
         case 0x8000 when (opcode & 0x000F) == 0xE:
           return _instructionFactory.Instruction8XYE(x, y);
         case 0x9000:
           return _instructionFactory.Instruction9XY0(x, y);
         case 0xA000:
           return _instructionFactory.InstructionANNN(nnn);
+        case 0xB000:
+          return _instructionFactory.InstructionBNNN(nnn);
         case 0xC000:
           return _instructionFactory.InstructionCXNN(x, nn);
         case 0xD000:

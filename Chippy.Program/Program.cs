@@ -23,12 +23,13 @@ namespace Chippy.Programe
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Trip8 Demo (2008) [Revival Studios].ch8");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Maze [David Winter, 199x].ch8");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Stars [Sergey Naydenov, 2010].ch8");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Breakout [Carmelo Cortez, 1979].ch8");
+      byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Breakout [Carmelo Cortez, 1979].ch8");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Pong (1 player).ch8");
 
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\1-chip8-logo (1).8o");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\2-ibm-logo.8o");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\test_opcode.ch8");
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\c8_test.c8");
       StringBuilder sb = new StringBuilder();
       List<byte> bytes = new List<byte>();
 
