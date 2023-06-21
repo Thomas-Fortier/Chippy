@@ -11,12 +11,14 @@
 
     private readonly Memory _memory;
     private readonly Window _window;
+    private readonly InstructionFactory _instructionFactory;
 
     public Processor(Memory memory, Window window, byte[] vRegisters)
     {
       _memory = memory;
       _window = window;
       _vRegisters = vRegisters;
+      _instructionFactory = new InstructionFactory(this, memory, window);
 
       Reset();
     }
@@ -49,74 +51,63 @@
     {
       var opcode = (ushort)(firstInstruction << 8 | secondInstruction);
 
-      ushort NNN = (ushort)(opcode & 0x0FFF);
-      byte NN = (byte)(opcode & 0x00FF);
-      byte N = (byte)(opcode & 0x000F);
-      byte X = (byte)((opcode & 0x0F00) >> 8);
-      byte Y = (byte)((opcode & 0x00F0) >> 4);
+      ushort nnn = (ushort)(opcode & 0x0FFF);
+      byte nn = (byte)(opcode & 0x00FF);
+      byte n = (byte)(opcode & 0x000F);
+      byte x = (byte)((opcode & 0x0F00) >> 8);
+      byte y = (byte)((opcode & 0x00F0) >> 4);
 
       switch (opcode & 0xF000)
       {
-        case 0x0000 when opcode == 0x00E0:
-          return InstructionFactory.ClearScreenInstruction(_window);
-        case 0x0000 when opcode == 0x00EE:
-          return InstructionFactory.ReturnInstruction(this, _memory);
-        case 0x0000:
-          return InstructionFactory.IgnoreInstruction();
+        case 0x0000 when (opcode & 0x00FF) == 0x00:
+          return _instructionFactory.Instruction0NNN(nnn);
+        case 0x0000 when (opcode & 0x00FF) == 0xE0:
+          return _instructionFactory.Instruction00E0();
+        case 0x0000 when (opcode & 0x00FF) == 0xEE:
+          return _instructionFactory.Instruction00EE();
         case 0x1000:
-          return InstructionFactory.JumpInstruction(NNN, this);
+          return _instructionFactory.Instruction1NNN(nnn);
         case 0x2000:
-          return InstructionFactory.CallInstruction(NNN, this, _memory);
+          return _instructionFactory.Instruction2NNN(nnn);
         case 0x3000:
-          return InstructionFactory.SkipIfEqualToByteInstruction(X, NN, this);
+          return _instructionFactory.Instruction3XNN(x, nn);
         case 0x4000:
-          return InstructionFactory.SkipIfNotEqualToByteInstruction(X, NN, this);
-        case 0x5000:
-          return InstructionFactory.SkipIfEqualToVInstruction(X, Y, this);
+          return _instructionFactory.Instruction4XNN(x, nn);
         case 0x6000:
-          return InstructionFactory.SetVRegtisterInstruction(X, NN, this);
+          return _instructionFactory.Instruction6XNN(x, nn);
         case 0x7000:
-          return InstructionFactory.AddToVXInstruction(X, NN, this);
-        case 0x8000 when (opcode & 0x000F) == 0:
-          return InstructionFactory.SetVXRegisterToVYRegisterInstruction(X, Y, this);
-        case 0x8000 when (opcode & 0x000F) == 2:
-          return InstructionFactory.AndInstruction(X, Y, this);
-        case 0x8000 when (opcode & 0x000F) == 4:
-          return InstructionFactory.AddInstruction(X, Y, this);
-        case 0x8000 when (opcode & 0x000F) == 6:
-          return InstructionFactory.ShrInstruction(X, this);
+          return _instructionFactory.Instruction7XNN(x, nn);
+        case 0x8000 when (opcode & 0x000F) == 0x0:
+          return _instructionFactory.Instruction8XY0(x, y);
+        case 0x8000 when (opcode & 0x000F) == 0x2:
+          return _instructionFactory.Instruction8XY2(x, y);
+        case 0x8000 when (opcode & 0x000F) == 0x4:
+          return _instructionFactory.Instruction8XY4(x, y);
         case 0x8000 when (opcode & 0x000F) == 0xE:
-          return InstructionFactory.ShlInstruction(X, this);
+          return _instructionFactory.Instruction8XYE(x, y);
         case 0xA000:
-          return InstructionFactory.SetIInstruction(NNN, this);
+          return _instructionFactory.InstructionANNN(nnn);
         case 0xC000:
-          return InstructionFactory.JumpWithOffsetInstruction(X, NN, this);
+          return _instructionFactory.InstructionCXNN(x, nn);
         case 0xD000:
-          return InstructionFactory.DrawInstruction(X, Y, N, this, _memory, _window);
-        case 0xF000 when (opcode & 0x00FF) == 0x7:
-          return InstructionFactory.StoreDelayTimerInstruction(X, this);
-        case 0xF000 when (opcode & 0x00FF) == 0xA:
-          return InstructionFactory.WaitForKey(X, this);
-        case 0xF000 when (opcode & 0x00FF) == 0x15:
-          return InstructionFactory.SetDelayTimerInstruction(X, this);
+          return _instructionFactory.InstructionDXYN(x, y, n);
         case 0xF000 when (opcode & 0x00FF) == 0x1E:
-          return InstructionFactory.AddIndexAndVRegisters(X, this);
-        case 0xF000 when (opcode & 0x00FF) == 0x29:
-          return InstructionFactory.SetIToDigitSprite(X, this, _memory);
-        case 0xF000 when (opcode & 0x00FF) == 0x33:
-          return InstructionFactory.StoreBcd(X, this, _memory);
-        case 0xF000 when (opcode & 0x00FF) == 0x55:
-          return InstructionFactory.CopyVRegistersInstruction(X, this, _memory);
+          return _instructionFactory.InstructionFX1E(x);
         case 0xF000 when (opcode & 0x00FF) == 0x65:
-          return InstructionFactory.ReadAllVRegisters(X, this, _memory);
+          return _instructionFactory.InstructionFX65(x);
         default:
           throw new NotSupportedException();
       }
     }
 
-    public void SetProgramCounter(ushort data)
+    public void IncrementProgramCounter(ushort amount)
     {
-      _programCounter = data;
+      _programCounter += amount;
+    }
+
+    public void SetProgramCounter(ushort value)
+    {
+      _programCounter = value;
     }
 
     public ushort GetProgramCounter()

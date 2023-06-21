@@ -13,16 +13,14 @@ namespace Chippy.Programe
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Chip8 emulator Logo [Garstyciuks].ch8");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\IBM Logo.ch8");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Chip8 Picture.ch8");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\1-chip8-logo.8o");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\2-ibm-logo.8o");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Particle Demo [zeroZshadow, 2008].ch8");
+      byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Particle Demo [zeroZshadow, 2008].ch8");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Random Number Test [Matthew Mikolay, 2010].ch8");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Zero Demo [zeroZshadow, 2007].ch8");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Clock Program [Bill Fisher, 1981].ch8");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Brix [Andreas Gustafsson, 1990].ch8");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Tetris [Fran Dachille, 1991].ch8");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Space Invaders [David Winter].ch8");
-      byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Trip8 Demo (2008) [Revival Studios].ch8");
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Trip8 Demo (2008) [Revival Studios].ch8");
       StringBuilder sb = new StringBuilder();
       List<byte> bytes = new List<byte>();
 
