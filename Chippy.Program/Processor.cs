@@ -2,8 +2,8 @@
 {
   internal class Processor
   {
-    public byte[] VRegisters { get; private set; }
-    public ushort IndexRegister { get; private set; }
+    private byte[] _vRegisters;
+    private ushort IndexRegister;
 
     private ushort _programCounter;
     private byte _delayTimer;
@@ -16,7 +16,7 @@
     {
       _memory = memory;
       _window = window;
-      VRegisters = vRegisters;
+      _vRegisters = vRegisters;
 
       Reset();
     }
@@ -31,9 +31,9 @@
       _delayTimer = 0;
       _soundTimer = 0;
 
-      for (int index = 0; index < VRegisters.Length; index++)
+      for (int index = 0; index < _vRegisters.Length; index++)
       {
-        VRegisters[index] = 0;
+        _vRegisters[index] = 0;
       }
     }
 
@@ -59,18 +59,56 @@
       {
         case 0x0000 when opcode == 0x00E0:
           return InstructionFactory.ClearScreenInstruction(_window);
+        case 0x0000 when opcode == 0x00EE:
+          return InstructionFactory.ReturnInstruction(this, _memory);
         case 0x0000:
           return InstructionFactory.IgnoreInstruction();
         case 0x1000:
           return InstructionFactory.JumpInstruction(NNN, this);
+        case 0x2000:
+          return InstructionFactory.CallInstruction(NNN, this, _memory);
+        case 0x3000:
+          return InstructionFactory.SkipIfEqualToByteInstruction(X, NN, this);
+        case 0x4000:
+          return InstructionFactory.SkipIfNotEqualToByteInstruction(X, NN, this);
+        case 0x5000:
+          return InstructionFactory.SkipIfEqualToVInstruction(X, Y, this);
         case 0x6000:
-          return InstructionFactory.SetVXInstruction(X, NN, this);
+          return InstructionFactory.SetVRegtisterInstruction(X, NN, this);
         case 0x7000:
           return InstructionFactory.AddToVXInstruction(X, NN, this);
+        case 0x8000 when (opcode & 0x000F) == 0:
+          return InstructionFactory.SetVXRegisterToVYRegisterInstruction(X, Y, this);
+        case 0x8000 when (opcode & 0x000F) == 2:
+          return InstructionFactory.AndInstruction(X, Y, this);
+        case 0x8000 when (opcode & 0x000F) == 4:
+          return InstructionFactory.AddInstruction(X, Y, this);
+        case 0x8000 when (opcode & 0x000F) == 6:
+          return InstructionFactory.ShrInstruction(X, this);
+        case 0x8000 when (opcode & 0x000F) == 0xE:
+          return InstructionFactory.ShlInstruction(X, this);
         case 0xA000:
           return InstructionFactory.SetIInstruction(NNN, this);
+        case 0xC000:
+          return InstructionFactory.JumpWithOffsetInstruction(X, NN, this);
         case 0xD000:
           return InstructionFactory.DrawInstruction(X, Y, N, this, _memory, _window);
+        case 0xF000 when (opcode & 0x00FF) == 0x7:
+          return InstructionFactory.StoreDelayTimerInstruction(X, this);
+        case 0xF000 when (opcode & 0x00FF) == 0xA:
+          return InstructionFactory.WaitForKey(X, this);
+        case 0xF000 when (opcode & 0x00FF) == 0x15:
+          return InstructionFactory.SetDelayTimerInstruction(X, this);
+        case 0xF000 when (opcode & 0x00FF) == 0x1E:
+          return InstructionFactory.AddIndexAndVRegisters(X, this);
+        case 0xF000 when (opcode & 0x00FF) == 0x29:
+          return InstructionFactory.SetIToDigitSprite(X, this, _memory);
+        case 0xF000 when (opcode & 0x00FF) == 0x33:
+          return InstructionFactory.StoreBcd(X, this, _memory);
+        case 0xF000 when (opcode & 0x00FF) == 0x55:
+          return InstructionFactory.CopyVRegistersInstruction(X, this, _memory);
+        case 0xF000 when (opcode & 0x00FF) == 0x65:
+          return InstructionFactory.ReadAllVRegisters(X, this, _memory);
         default:
           throw new NotSupportedException();
       }
@@ -81,19 +119,44 @@
       _programCounter = data;
     }
 
+    public ushort GetProgramCounter()
+    {
+      return _programCounter;
+    }
+
+    public byte GetVRegister(int index)
+    {
+      return _vRegisters[index];
+    }
+
     public void SetVRegister(int index, byte value)
     {
-      VRegisters[index] = value;
+      _vRegisters[index] = value;
     }
 
     public void AddToVRegister(int index, byte value)
     {
-      VRegisters[index] += value;
+      _vRegisters[index] += value;
     }
 
-    public void SetIRegister(ushort value)
+    public void SetIndexRegister(ushort value)
     {
       IndexRegister = value;
+    }
+
+    public ushort GetIndexRegister()
+    {
+      return IndexRegister;
+    }
+
+    public void SetDelayTimer(byte delay)
+    {
+      _delayTimer = delay;
+    }
+
+    public byte GetDelayTimer()
+    {
+      return _delayTimer;
     }
 
     public void Execute(Instruction instruction)

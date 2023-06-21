@@ -17,5 +17,10 @@
     {
       _logic.Invoke();
     }
+
+    public override string ToString()
+    {
+      return $"{_id}: {_name}";
+    }
   }
 }

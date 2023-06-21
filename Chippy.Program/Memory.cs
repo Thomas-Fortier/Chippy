@@ -3,9 +3,9 @@
   internal class Memory
   {
     private readonly byte[] _data;
-    private readonly Stack<byte> _stack;
+    private readonly Stack<ushort> _stack;
 
-    public Memory(byte[] data, Stack<byte> stack)
+    public Memory(byte[] data, Stack<ushort> stack)
     {
       _data = data;
       _stack = stack;
@@ -14,6 +14,16 @@
     public byte Read(int location)
     {
       return _data[location];
+    }
+
+    public ushort PopStack()
+    {
+      return _stack.Pop();
+    }
+
+    public void PushStack(ushort value)
+    {
+      _stack.Push(value);
     }
 
     public void Write(int location, byte value)

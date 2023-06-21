@@ -7,26 +7,38 @@ namespace Chippy.Program
 {
   internal class Window : GameWindow
   {
+    public delegate void FrameRendered();
+    public event FrameRendered? OnFrameRendered;
+
     public int NativeWidth { get; } = 64;
     public int NativeHeight { get; } = 32;
 
-    public byte[] Buffer { get; set; }
+    private byte[] _displayBuffer;
 
-    private Emulator? _emulator;
-    private byte[] _data;
-
-    public Window(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings, int nativeWidth, int nativeHeight, byte[] data)
+    public Window(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings, int nativeWidth, int nativeHeight)
       : base(gameWindowSettings, nativeWindowSettings)
     {
       NativeWidth = nativeWidth;
       NativeHeight = nativeHeight;
-      _data = data;
-      Buffer = new byte[NativeWidth * NativeHeight];
+      _displayBuffer = new byte[NativeWidth * NativeHeight];
     }
 
-    public void AddEmulator(Emulator emulator)
+    public void Clear()
     {
-      _emulator = emulator;
+      for (int index = 0; index < _displayBuffer.Length; index++)
+      {
+        _displayBuffer[index] = 0;
+      }
+    }
+
+    public void TogglePixel(int location)
+    {
+      _displayBuffer[location] ^= 1;
+    }
+
+    public bool IsPixelOn(int location)
+    {
+      return _displayBuffer[location] == 1;
     }
 
     protected override void OnLoad()
@@ -46,16 +58,12 @@ namespace Chippy.Program
       base.OnRenderFrame(e);
 
       GL.Clear(ClearBufferMask.ColorBufferBit);
+
       Render();
-    }
 
-    protected override void OnUpdateFrame(FrameEventArgs args)
-    {
-      base.OnUpdateFrame(args);
-
-      if (_emulator != null)
+      if (OnFrameRendered != null)
       {
-        _emulator.ExecuteCycle();
+        OnFrameRendered();
       }
     }
 
@@ -66,14 +74,6 @@ namespace Chippy.Program
       GL.Viewport(0, 0, e.Width, e.Height);
     }
 
-    public void Clear()
-    {
-      for (int index = 0; index < Buffer.Length; index++)
-      {
-        Buffer[index] = 0;
-      }
-    }
-
     private void Render()
     {
       GL.Clear(ClearBufferMask.ColorBufferBit);
@@ -82,7 +82,7 @@ namespace Chippy.Program
       {
         for (int x = 0; x < NativeWidth; x++)
         {
-          var currentPixel = Buffer[y * NativeWidth + x];
+          var currentPixel = _displayBuffer[y * NativeWidth + x];
 
           if (currentPixel > 0)
           {

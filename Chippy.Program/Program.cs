@@ -10,7 +10,19 @@ namespace Chippy.Programe
   {
     private static void Main()
     {
-      byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\IBM Logo.ch8");
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Chip8 emulator Logo [Garstyciuks].ch8");
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\IBM Logo.ch8");
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Chip8 Picture.ch8");
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\1-chip8-logo.8o");
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\2-ibm-logo.8o");
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Particle Demo [zeroZshadow, 2008].ch8");
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Random Number Test [Matthew Mikolay, 2010].ch8");
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Zero Demo [zeroZshadow, 2007].ch8");
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Clock Program [Bill Fisher, 1981].ch8");
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Brix [Andreas Gustafsson, 1990].ch8");
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Tetris [Fran Dachille, 1991].ch8");
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Space Invaders [David Winter].ch8");
+      byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Trip8 Demo (2008) [Revival Studios].ch8");
       StringBuilder sb = new StringBuilder();
       List<byte> bytes = new List<byte>();
 
@@ -20,14 +32,22 @@ namespace Chippy.Programe
         sb.Append(Convert.ToString(b, 2).PadLeft(8, '0'));
       }
 
-      var result = sb.ToString();
-
-      var window = CreateWindow(bytes.ToArray());
-      window.Run();
+      var emulator = CreateEmulator(bytes.ToArray());
+      emulator.Start();
     }
 
-    private static Window CreateWindow(byte[] data)
+    private static Emulator CreateEmulator(byte[] data)
     { 
+      var window = CreateWindow();
+      var memory = new Memory(new byte[4096], new Stack<ushort>());
+      var processor = new Processor(memory, window, new byte[16]);
+      var emulator = new Emulator(processor, window, data);
+
+      return emulator;
+    }
+
+    private static Window CreateWindow()
+    {
       var gameSettings = new GameWindowSettings
       {
         UpdateFrequency = 600
@@ -43,14 +63,7 @@ namespace Chippy.Programe
       const int NATIVE_WIDTH = 64;
       const int NATIVE_HEIGHT = 32;
 
-      var window = new Window(gameSettings, nativeSettings, NATIVE_WIDTH, NATIVE_HEIGHT, data);
-      var memory = new Memory(new byte[4096], new Stack<byte>());
-      var processor = new Processor(memory, window, new byte[16]);
-      var emulator = new Emulator(processor, data);
-
-      window.AddEmulator(emulator);
-
-      return window;
+      return new Window(gameSettings, nativeSettings, NATIVE_WIDTH, NATIVE_HEIGHT);
     }
   }
 }
