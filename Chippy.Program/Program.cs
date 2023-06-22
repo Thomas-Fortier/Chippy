@@ -31,7 +31,13 @@ namespace Chippy.Programe
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\test_opcode.ch8");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\c8_test.c8");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\chip8-test-rom.ch8");
-      byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\SCTEST.CH8");
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\SCTEST.CH8");
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\1-chip8-logo.ch8");
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\2-ibm-logo.ch8");
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\4-flags.ch8");
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\3-corax+.ch8");
+      byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\5-quirks.ch8");
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\6-keypad.ch8");
       StringBuilder sb = new StringBuilder();
       List<byte> bytes = new List<byte>();
 

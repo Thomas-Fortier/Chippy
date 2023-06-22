@@ -154,9 +154,9 @@
     {
       return new Instruction("8XY4", "Set Vx = Vx + Vy, set VF = carry", () =>
       {
-        int result = (byte)(_processor.GetVRegister(x) + _processor.GetVRegister(y));
-        _processor.SetVRegister(0xF, result > byte.MaxValue ? (byte) 1 : (byte) 0);
+        int result = _processor.GetVRegister(x) + _processor.GetVRegister(y);
         _processor.SetVRegister(x, (byte)result);
+        _processor.SetVRegister(0xF, result > byte.MaxValue ? (byte) 1 : (byte) 0);
       });
     }
 
@@ -164,9 +164,11 @@
     {
       return new Instruction("8XY5", "Set Vx = Vx - Vy, set VF = NOT borrow", () =>
       {
-        _processor.SetVRegister(0xF, _processor.GetVRegister(x) > _processor.GetVRegister(y) ? (byte)1 : (byte)0);
-        byte result = (byte)(_processor.GetVRegister(x) - _processor.GetVRegister(y));
+        byte xRegisterValue = _processor.GetVRegister(x);
+        byte yRegisterValue = _processor.GetVRegister(y);
+        byte result = (byte)(xRegisterValue - yRegisterValue);
         _processor.SetVRegister(x, result);
+        _processor.SetVRegister(0xF, xRegisterValue > yRegisterValue ? (byte)1 : (byte)0);
       });
     }
 
@@ -174,8 +176,11 @@
     {
       return new Instruction("8XY6", "Set Vx = Vx SHR 1", () =>
       {
-        _processor.SetVRegister(0xF, (x & 0x0000000F) == 1 ? (byte)1 : (byte)0);
-        _processor.SetVRegister(x, (byte)(_processor.GetVRegister(x) / 2));
+        var xRegisterValue = _processor.GetVRegister(x);
+        var yRegisterValue = _processor.GetVRegister(y);
+
+        _processor.SetVRegister(x, (byte)(xRegisterValue >> 0x1));
+        _processor.SetVRegister(0xF, (byte)(xRegisterValue & 0x1));
       });
     }
 
@@ -193,8 +198,11 @@
     {
       return new Instruction("8XYE", "Set Vx = Vx SHL 1", () =>
       {
-        _processor.SetVRegister(0xF, (x & 0xF0000000) == 1 ? (byte)1 : (byte)0);
-        _processor.SetVRegister(x, (byte)(_processor.GetVRegister(x) * 2));
+        var xRegisterValue = _processor.GetVRegister(x);
+        var yRegisterValue = _processor.GetVRegister(y);
+
+        _processor.SetVRegister(x, (byte)(xRegisterValue << 0x1));
+        _processor.SetVRegister(0xF, (byte)((xRegisterValue & 0x80) >> 0x7));
       });
     }
 
@@ -369,7 +377,7 @@
       {
         for (int index = 0; index <= x; index++)
         {
-          _memory.Write(_processor.GetIndexRegister() + index, _processor.GetVRegister(x));
+          _memory.Write(_processor.GetIndexRegister() + index, _processor.GetVRegister(index));
         }
       });
     }
