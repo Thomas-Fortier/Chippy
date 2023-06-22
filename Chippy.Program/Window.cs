@@ -17,6 +17,8 @@ namespace Chippy.Program
     public int NativeHeight { get; } = 32;
 
     private byte[] _displayBuffer;
+    private bool _pause;
+    private bool _step;
 
     public Window(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings, int nativeWidth, int nativeHeight)
       : base(gameWindowSettings, nativeWindowSettings)
@@ -61,6 +63,28 @@ namespace Chippy.Program
       base.OnKeyDown(e);
       byte keyCode;
 
+      if (e.Key == OpenTK.Windowing.GraphicsLibraryFramework.Keys.P)
+      {
+        _pause = !_pause;
+
+        if (_pause)
+        {
+          Title = "Chippy (PAUSED)";
+        }
+        else
+        {
+          Title = "Chippy";
+        }
+
+        return;
+      }
+      
+      if (e.Key == OpenTK.Windowing.GraphicsLibraryFramework.Keys.Space && _pause)
+      {
+        _step = true;
+        return;
+      }
+
       try
       {
         keyCode = Keypad.GetKeyCode(e);
@@ -93,6 +117,16 @@ namespace Chippy.Program
     protected override void OnRenderFrame(FrameEventArgs e)
     {
       base.OnRenderFrame(e);
+
+      if (_pause && !_step)
+      {
+        return;
+      }
+
+      if (_pause && _step)
+      {
+        _step = false;
+      }
 
       GL.Clear(ClearBufferMask.ColorBufferBit);
 

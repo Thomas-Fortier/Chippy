@@ -25,6 +25,8 @@
 
       Reset();
       MakeSound();
+      DecrementDelayTimer();
+      //DecrementSoundTimer();
     }
 
     private Task MakeSound()
@@ -37,6 +39,36 @@
           {
             Console.Beep();
             _soundTimer = 0;
+          }
+        }
+      });
+    }
+
+    private Task DecrementDelayTimer()
+    {
+      return Task.Factory.StartNew(() =>
+      {
+        while (true)
+        {
+          while (_delayTimer != 0)
+          {
+            Thread.Sleep(17); // 60 hz
+            _delayTimer--;
+          }
+        }
+      });
+    }
+
+    private Task DecrementSoundTimer()
+    {
+      return Task.Factory.StartNew(() =>
+      {
+        while (true)
+        {
+          while (_soundTimer != 0)
+          {
+            Thread.Sleep(17); // 60 hz
+            _delayTimer--;
           }
         }
       });
@@ -210,6 +242,28 @@
 
     public void Execute(Instruction instruction)
     {
+      Console.WriteLine("=======================");
+      Console.WriteLine(instruction.ToString());
+      Console.WriteLine($"PC: {_programCounter}");
+      Console.WriteLine($"I: {IndexRegister}");
+      Console.WriteLine($"D: {_delayTimer}");
+      Console.WriteLine($"S: {_soundTimer}");
+      Console.WriteLine($"V0: {_vRegisters[0]}");
+      Console.WriteLine($"V1: {_vRegisters[1]}");
+      Console.WriteLine($"V2: {_vRegisters[2]}");
+      Console.WriteLine($"V3: {_vRegisters[3]}");
+      Console.WriteLine($"V4: {_vRegisters[4]}");
+      Console.WriteLine($"V5: {_vRegisters[5]}");
+      Console.WriteLine($"V6: {_vRegisters[6]}");
+      Console.WriteLine($"V7: {_vRegisters[7]}");
+      Console.WriteLine($"V8: {_vRegisters[8]}");
+      Console.WriteLine($"V9: {_vRegisters[9]}");
+      Console.WriteLine($"VA: {_vRegisters[10]}");
+      Console.WriteLine($"VB: {_vRegisters[11]}");
+      Console.WriteLine($"VC: {_vRegisters[12]}");
+      Console.WriteLine($"VD: {_vRegisters[13]}");
+      Console.WriteLine($"VE: {_vRegisters[14]}");
+      Console.WriteLine($"VF: {_vRegisters[15]}");
       instruction.Execute();
     }
 
