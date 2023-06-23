@@ -129,6 +129,7 @@
       return new Instruction("8XY0", "Set Vx = Vx | Vy", () =>
       {
         _processor.SetVRegister(x, (byte)(_processor.GetVRegister(x) | _processor.GetVRegister(y)));
+        _processor.SetVRegister(0xF, 0x0);
       });
     }
 
@@ -138,6 +139,7 @@
       {
         byte result = (byte)(_processor.GetVRegister(x) & _processor.GetVRegister(y));
         _processor.SetVRegister(x, result);
+        _processor.SetVRegister(0xF, 0x0);
       });
     }
 
@@ -147,6 +149,7 @@
       {
         byte result = (byte)(_processor.GetVRegister(x) ^ _processor.GetVRegister(y));
         _processor.SetVRegister(x, result);
+        _processor.SetVRegister(0xF, 0x0);
       });
     }
 
@@ -179,7 +182,7 @@
         var xRegisterValue = _processor.GetVRegister(x);
         var yRegisterValue = _processor.GetVRegister(y);
 
-        _processor.SetVRegister(x, (byte)(xRegisterValue >> 0x1));
+        _processor.SetVRegister(x, (byte)(yRegisterValue >> 0x1));
         _processor.SetVRegister(0xF, (byte)(xRegisterValue & 0x1));
       });
     }
@@ -201,7 +204,7 @@
         var xRegisterValue = _processor.GetVRegister(x);
         var yRegisterValue = _processor.GetVRegister(y);
 
-        _processor.SetVRegister(x, (byte)(xRegisterValue << 0x1));
+        _processor.SetVRegister(x, (byte)(yRegisterValue << 0x1));
         _processor.SetVRegister(0xF, (byte)((xRegisterValue & 0x80) >> 0x7));
       });
     }
@@ -379,6 +382,8 @@
         {
           _memory.Write(_processor.GetIndexRegister() + index, _processor.GetVRegister(index));
         }
+
+        _processor.SetIndexRegister((ushort)(_processor.GetIndexRegister() + 1));
       });
     }
 
@@ -390,6 +395,8 @@
         {
           _processor.SetVRegister(index, _memory.Read(_processor.GetIndexRegister() + index));
         }
+
+        _processor.SetIndexRegister((ushort)(_processor.GetIndexRegister() + 1));
       });
     }
   }

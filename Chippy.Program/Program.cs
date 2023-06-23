@@ -26,7 +26,7 @@ namespace Chippy.Programe
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Breakout [Carmelo Cortez, 1979].ch8");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Pong (1 player).ch8");
 
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\1-chip8-logo (1).8o");
+      byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\1-chip8-logo (1).8o");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\2-ibm-logo.8o");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\test_opcode.ch8");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\c8_test.c8");
@@ -36,7 +36,7 @@ namespace Chippy.Programe
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\2-ibm-logo.ch8");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\4-flags.ch8");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\3-corax+.ch8");
-      byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\5-quirks.ch8");
+      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\5-quirks.ch8");
       //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\6-keypad.ch8");
       StringBuilder sb = new StringBuilder();
       List<byte> bytes = new List<byte>();
