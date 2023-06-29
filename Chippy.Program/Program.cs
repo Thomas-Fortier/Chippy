@@ -7,46 +7,30 @@ namespace Chippy.Program
 {
   internal abstract class Program
   {
-    private static void Main()
+    private static void Main(string[] args)
     {
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Chip8 emulator Logo [Garstyciuks].ch8");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\IBM Logo.ch8");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Chip8 Picture.ch8");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Particle Demo [zeroZshadow, 2008].ch8");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Random Number Test [Matthew Mikolay, 2010].ch8");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Zero Demo [zeroZshadow, 2007].ch8");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Clock Program [Bill Fisher, 1981].ch8");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Brix [Andreas Gustafsson, 1990].ch8");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Tetris [Fran Dachille, 1991].ch8");
-      byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Space Invaders [David Winter].ch8");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Trip8 Demo (2008) [Revival Studios].ch8");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Maze [David Winter, 199x].ch8");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Stars [Sergey Naydenov, 2010].ch8");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Breakout [Carmelo Cortez, 1979].ch8");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\Pong (1 player).ch8");
-
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\1-chip8-logo (1).8o");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\2-ibm-logo.8o");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\test_opcode.ch8");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\c8_test.c8");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\chip8-test-rom.ch8");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\SCTEST.CH8");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\1-chip8-logo.ch8");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\2-ibm-logo.ch8");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\4-flags.ch8");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\3-corax+.ch8");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\5-quirks.ch8");
-      //byte[] fileBytes = File.ReadAllBytes(@"C:\Users\Thomas\Desktop\6-keypad.ch8");
-      StringBuilder sb = new StringBuilder();
-      List<byte> bytes = new List<byte>();
-
-      foreach (byte b in fileBytes)
+      if (args.Length < 1)
       {
-        bytes.Add(b);
-        sb.Append(Convert.ToString(b, 2).PadLeft(8, '0'));
+        throw new ArgumentException("Must specify a file path for the ROM to run.");
       }
 
-      var emulator = CreateEmulator(bytes.ToArray());
+      var romFilePath = args[0];
+
+      if (!File.Exists(romFilePath))
+      {
+        throw new FileNotFoundException("Could not find specified ROM file.", romFilePath);
+      }
+      
+      var stringBuilder = new StringBuilder();
+      var rom = new List<byte>();
+
+      foreach (var romByte in File.ReadAllBytes(romFilePath))
+      {
+        rom.Add(romByte);
+        stringBuilder.Append(Convert.ToString(romByte, 2).PadLeft(8, '0'));
+      }
+
+      var emulator = CreateEmulator(rom.ToArray());
       emulator.Run();
     }
 
