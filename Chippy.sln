@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33530.505
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chippy.Program", "Chippy.Program\Chippy.Program.csproj", "{74B06EB2-7C77-448C-985A-11318D842F84}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chippy.Emulator", "Chippy.Emulator\Chippy.Emulator.csproj", "{74B06EB2-7C77-448C-985A-11318D842F84}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

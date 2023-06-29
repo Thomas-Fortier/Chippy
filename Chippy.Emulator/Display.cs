@@ -1,4 +1,4 @@
-﻿namespace Chippy.Program
+﻿namespace Chippy.Emulator
 {
   public class Display
   {

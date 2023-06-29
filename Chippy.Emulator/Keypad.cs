@@ -1,6 +1,6 @@
 ﻿using OpenTK.Windowing.GraphicsLibraryFramework;
 
-namespace Chippy.Program
+namespace Chippy.Emulator
 {
   public class Keypad
   {

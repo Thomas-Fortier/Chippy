@@ -3,7 +3,7 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using System.Text;
 
-namespace Chippy.Program
+namespace Chippy.Emulator
 {
   internal abstract class Program
   {

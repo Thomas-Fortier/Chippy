@@ -4,7 +4,7 @@ using OpenTK.Windowing.Desktop;
 using System.Drawing;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
-namespace Chippy.Program
+namespace Chippy.Emulator
 {
   internal class Emulator : GameWindow
   {

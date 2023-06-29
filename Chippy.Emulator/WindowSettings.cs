@@ -1,6 +1,6 @@
 ﻿using OpenTK.Windowing.Desktop;
 
-namespace Chippy.Program;
+namespace Chippy.Emulator;
 
 public class WindowSettings
 {
