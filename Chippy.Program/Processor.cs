@@ -1,96 +1,72 @@
 ﻿namespace Chippy.Program
 {
-  internal class Processor
+  public sealed partial class Processor
   {
-    public Keypad Keypad { get; }
-
-    private byte[] _vRegisters;
-    private ushort IndexRegister;
+    public event EventHandler? WaitingForKeyPress;
 
     private ushort _programCounter;
-    private byte _delayTimer;
-    private byte _soundTimer;
+    private ushort _index;
+    private readonly TimerRegister _delayTimer;
+    private readonly TimerRegister _soundTimer;
+    private readonly byte[] _vRegisters;
 
     private readonly Memory _memory;
-    private readonly Window _window;
-    private readonly InstructionFactory _instructionFactory;
+    private readonly Display _display;
+    private readonly Keypad _keypad;
 
-    public Processor(Memory memory, Window window, Keypad keypad, byte[] vRegisters)
+    public Processor(Memory memory, Display display, Keypad keypad, byte[] vRegisters)
     {
       _memory = memory;
-      _window = window;
-      Keypad = keypad;
+      _display = display;
+      _keypad = keypad;
       _vRegisters = vRegisters;
-      _instructionFactory = new InstructionFactory(this, memory, window);
+      
+      const int DELAY = 17; // 60 Hz
+      _delayTimer = new TimerRegister(DELAY);
+      _soundTimer = new TimerRegister(DELAY);
 
       Reset();
       MakeSound();
-      DecrementDelayTimer();
-      //DecrementSoundTimer();
     }
 
-    private Task MakeSound()
+    // TODO: Move
+    private void MakeSound()
     {
-      return Task.Factory.StartNew(() =>
+      Task.Factory.StartNew(() =>
       {
         while (true)
         {
-          if (_soundTimer != 0)
-          {
-            Console.Beep();
-            _soundTimer = 0;
-          }
+          if (_soundTimer.Value == 0)
+            continue;
+          
+          Console.Beep();
+          _soundTimer.Value = 0;
         }
+        
+        // ReSharper disable once FunctionNeverReturns
       });
     }
 
-    private Task DecrementDelayTimer()
-    {
-      return Task.Factory.StartNew(() =>
-      {
-        while (true)
-        {
-          while (_delayTimer != 0)
-          {
-            Thread.Sleep(17); // 60 hz
-            _delayTimer--;
-          }
-        }
-      });
-    }
-
-    private Task DecrementSoundTimer()
-    {
-      return Task.Factory.StartNew(() =>
-      {
-        while (true)
-        {
-          while (_soundTimer != 0)
-          {
-            Thread.Sleep(17); // 60 hz
-            _delayTimer--;
-          }
-        }
-      });
-    }
-
-    public void Reset()
+    private void Reset()
     {
       _memory.Reset();
-      _window.Clear();
+      _display.Clear();
 
       _programCounter = 0x200;
-      IndexRegister = 0;
-      _delayTimer = 0;
-      _soundTimer = 0;
+      _index = 0;
+      _delayTimer.Value = 0;
+      _soundTimer.Value = 0;
 
-      for (int index = 0; index < _vRegisters.Length; index++)
+      _delayTimer.Start();
+      _soundTimer.Start();
+      
+      for (var index = 0; index < _vRegisters.Length; index++)
       {
         _vRegisters[index] = 0;
       }
     }
-
-    public byte Fetch()
+    
+    private byte Fetch()
     {
       var result = _memory.Read(_programCounter);
       _programCounter++;
@@ -98,178 +74,141 @@
       return result;
     }
 
-    public Instruction Decode(byte firstInstruction, byte secondInstruction)
+    public void ExecuteCycle()
+    {
+      var firstNibble = Fetch();
+      var secondNibble = Fetch();
+      
+      ExecuteInstruction(firstNibble, secondNibble);
+
+      Thread.Sleep(2); // TODO: Move to emulator ?
+    }
+    
+    private void ExecuteInstruction(byte firstInstruction, byte secondInstruction)
     {
       var opcode = (ushort)(firstInstruction << 8 | secondInstruction);
 
-      ushort nnn = (ushort)(opcode & 0x0FFF);
-      byte nn = (byte)(opcode & 0x00FF);
-      byte n = (byte)(opcode & 0x000F);
-      byte x = (byte)((opcode & 0x0F00) >> 8);
-      byte y = (byte)((opcode & 0x00F0) >> 4);
+      var nnn = (ushort)(opcode & 0x0FFF);
+      var nn = (byte)(opcode & 0x00FF);
+      var n = (byte)(opcode & 0x000F);
+      var x = (byte)((opcode & 0x0F00) >> 8);
+      var y = (byte)((opcode & 0x00F0) >> 4);
 
       switch (opcode & 0xF000)
       {
         case 0x0000 when (opcode & 0x00FF) == 0x00:
-          return _instructionFactory.Instruction0NNN(nnn);
+          Instruction0NNN(nnn);
+          break;
         case 0x0000 when (opcode & 0x00FF) == 0xE0:
-          return _instructionFactory.Instruction00E0();
+          Instruction00E0();
+          break;
         case 0x0000 when (opcode & 0x00FF) == 0xEE:
-          return _instructionFactory.Instruction00EE();
+          Instruction00EE();
+          break;
         case 0x1000:
-          return _instructionFactory.Instruction1NNN(nnn);
+          Instruction1NNN(nnn);
+          break;
         case 0x2000:
-          return _instructionFactory.Instruction2NNN(nnn);
+          Instruction2NNN(nnn);
+          break;
         case 0x3000:
-          return _instructionFactory.Instruction3XNN(x, nn);
+          Instruction3XNN(x, nn);
+          break;
         case 0x4000:
-          return _instructionFactory.Instruction4XNN(x, nn);
+          Instruction4XNN(x, nn);
+          break;
         case 0x5000:
-          return _instructionFactory.Instruction5XY0(x, y);
+          Instruction5XY0(x, y);
+          break;
         case 0x6000:
-          return _instructionFactory.Instruction6XNN(x, nn);
+          Instruction6XNN(x, nn);
+          break;
         case 0x7000:
-          return _instructionFactory.Instruction7XNN(x, nn);
+          Instruction7XNN(x, nn);
+          break;
         case 0x8000 when (opcode & 0x000F) == 0x0:
-          return _instructionFactory.Instruction8XY0(x, y);
+          Instruction8XY0(x, y);
+          break;
         case 0x8000 when (opcode & 0x000F) == 0x1:
-          return _instructionFactory.Instruction8XY1(x, y);
+          Instruction8XY1(x, y);
+          break;
         case 0x8000 when (opcode & 0x000F) == 0x2:
-          return _instructionFactory.Instruction8XY2(x, y);
+          Instruction8XY2(x, y);
+          break;
         case 0x8000 when (opcode & 0x000F) == 0x3:
-          return _instructionFactory.Instruction8XY3(x, y);
+          Instruction8XY3(x, y);
+          break;
         case 0x8000 when (opcode & 0x000F) == 0x4:
-          return _instructionFactory.Instruction8XY4(x, y);
+          Instruction8XY4(x, y);
+          break;
         case 0x8000 when (opcode & 0x000F) == 0x5:
-          return _instructionFactory.Instruction8XY5(x, y);
+          Instruction8XY5(x, y);
+          break;
         case 0x8000 when (opcode & 0x000F) == 0x6:
-          return _instructionFactory.Instruction8XY6(x, y);
+          Instruction8XY6(x, y);
+          break;
         case 0x8000 when (opcode & 0x000F) == 0x7:
-          return _instructionFactory.Instruction8XY7(x, y);
+          Instruction8XY7(x, y);
+          break;
         case 0x8000 when (opcode & 0x000F) == 0xE:
-          return _instructionFactory.Instruction8XYE(x, y);
+          Instruction8XYE(x, y);
+          break;
         case 0x9000:
-          return _instructionFactory.Instruction9XY0(x, y);
+          Instruction9XY0(x, y);
+          break;
         case 0xA000:
-          return _instructionFactory.InstructionANNN(nnn);
+          InstructionANNN(nnn);
+          break;
         case 0xB000:
-          return _instructionFactory.InstructionBNNN(nnn);
+          InstructionBNNN(nnn);
+          break;
         case 0xC000:
-          return _instructionFactory.InstructionCXNN(x, nn);
+          InstructionCXNN(x, nn);
+          break;
         case 0xD000:
-          return _instructionFactory.InstructionDXYN(x, y, n);
+          InstructionDXYN(x, y, n);
+          break;
         case 0xE000 when (opcode & 0x00FF) == 0x9E:
-          return _instructionFactory.InstructionEX9E(x);
+          InstructionEX9E(x);
+          break;
         case 0xE000 when (opcode & 0x00FF) == 0xA1:
-          return _instructionFactory.InstructionEXA1(x);
+          InstructionEXA1(x);
+          break;
         case 0xF000 when (opcode & 0x00FF) == 0x1E:
-          return _instructionFactory.InstructionFX1E(x);
+          InstructionFX1E(x);
+          break;
         case 0xF000 when (opcode & 0x00FF) == 0x07:
-          return _instructionFactory.InstructionFX07(x);
+          InstructionFX07(x);
+          break;
         case 0xF000 when (opcode & 0x00FF) == 0x0A:
-          return _instructionFactory.InstructionFX0A(x);
+          InstructionFX0A(x);
+          break;
         case 0xF000 when (opcode & 0x00FF) == 0x15:
-          return _instructionFactory.InstructionFX15(x);
+          InstructionFX15(x);
+          break;
         case 0xF000 when (opcode & 0x00FF) == 0x18:
-          return _instructionFactory.InstructionFX18(x);
+          InstructionFX18(x);
+          break;
         case 0xF000 when (opcode & 0x00FF) == 0x29:
-          return _instructionFactory.InstructionFX29(x);
+          InstructionFX29(x);
+          break;
         case 0xF000 when (opcode & 0x00FF) == 0x33:
-          return _instructionFactory.InstructionFX33(x);
+          InstructionFX33(x);
+          break;
         case 0xF000 when (opcode & 0x00FF) == 0x55:
-          return _instructionFactory.InstructionFX55(x);
+          InstructionFX55(x);
+          break;
         case 0xF000 when (opcode & 0x00FF) == 0x65:
-          return _instructionFactory.InstructionFX65(x);
+          InstructionFX65(x);
+          break;
         default:
           throw new NotSupportedException();
       }
     }
 
-    public void IncrementProgramCounter(ushort amount)
+    private void OnWaitingForKeyPress(EventArgs e)
     {
-      _programCounter += amount;
-    }
-
-    public void SetProgramCounter(ushort value)
-    {
-      _programCounter = value;
-    }
-
-    public ushort GetProgramCounter()
-    {
-      return _programCounter;
-    }
-
-    public byte GetVRegister(int index)
-    {
-      return _vRegisters[index];
-    }
-
-    public void SetVRegister(int index, byte value)
-    {
-      _vRegisters[index] = value;
-    }
-
-    public void AddToVRegister(int index, byte value)
-    {
-      _vRegisters[index] += value;
-    }
-
-    public void SetIndexRegister(ushort value)
-    {
-      IndexRegister = value;
-    }
-
-    public ushort GetIndexRegister()
-    {
-      return IndexRegister;
-    }
-
-    public void SetDelayTimer(byte delay)
-    {
-      _delayTimer = delay;
-    }
-
-    public byte GetDelayTimer()
-    {
-      return _delayTimer;
-    }
-
-    public void SetSoundTimer(byte value)
-    {
-      _soundTimer = value;
-    }
-
-    public void Execute(Instruction instruction)
-    {
-      Console.WriteLine("=======================");
-      Console.WriteLine(instruction.ToString());
-      Console.WriteLine($"PC: {_programCounter}");
-      Console.WriteLine($"I: {IndexRegister}");
-      Console.WriteLine($"D: {_delayTimer}");
-      Console.WriteLine($"S: {_soundTimer}");
-      Console.WriteLine($"V0: {_vRegisters[0]}");
-      Console.WriteLine($"V1: {_vRegisters[1]}");
-      Console.WriteLine($"V2: {_vRegisters[2]}");
-      Console.WriteLine($"V3: {_vRegisters[3]}");
-      Console.WriteLine($"V4: {_vRegisters[4]}");
-      Console.WriteLine($"V5: {_vRegisters[5]}");
-      Console.WriteLine($"V6: {_vRegisters[6]}");
-      Console.WriteLine($"V7: {_vRegisters[7]}");
-      Console.WriteLine($"V8: {_vRegisters[8]}");
-      Console.WriteLine($"V9: {_vRegisters[9]}");
-      Console.WriteLine($"VA: {_vRegisters[10]}");
-      Console.WriteLine($"VB: {_vRegisters[11]}");
-      Console.WriteLine($"VC: {_vRegisters[12]}");
-      Console.WriteLine($"VD: {_vRegisters[13]}");
-      Console.WriteLine($"VE: {_vRegisters[14]}");
-      Console.WriteLine($"VF: {_vRegisters[15]}");
-      instruction.Execute();
-    }
-
-    public void LoadRom(byte[] rom)
-    {
-      _memory.LoadRom(rom, _programCounter);
+      WaitingForKeyPress?.Invoke(this, e);
     }
   }
 }

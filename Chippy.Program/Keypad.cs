@@ -1,32 +1,38 @@
-﻿using OpenTK.Windowing.Common;
-using OpenTK.Windowing.GraphicsLibraryFramework;
+﻿using OpenTK.Windowing.GraphicsLibraryFramework;
 
 namespace Chippy.Program
 {
-  internal class Keypad
+  public class Keypad
   {
-    private Dictionary<byte, bool> _keys;
+    private readonly Dictionary<byte, bool> _keys;
 
-    public Keypad(byte[] keys, Window window)
+    public Keypad(IEnumerable<byte> keys)
     {
       _keys = new Dictionary<byte, bool>();
       
-      foreach (byte key in keys)
+      foreach (var key in keys)
       {
         _keys.Add(key, false);
       }
-
-      window.OnKeyPressed += EnableKey;
-      window.OnKeyReleased += DisableKey;
     }
 
-    public void EnableKey(object? sender, byte key)
+    public void EnableKey(byte key)
     {
+      if (!_keys.ContainsKey(key))
+      {
+        return;
+      }
+      
       _keys[key] = true;
     }
 
-    public void DisableKey(object? sender, byte key)
+    public void DisableKey(byte key)
     {
+      if (!_keys.ContainsKey(key))
+      {
+        return;
+      }
+      
       _keys[key] = false;
     }
 
@@ -35,45 +41,43 @@ namespace Chippy.Program
       return _keys.GetValueOrDefault(key);
     }
 
-    public static byte GetKeyCode(KeyboardKeyEventArgs e)
+    public bool IsAnyKeyPressed()
     {
-      switch (e.Key)
+      return _keys.Any(key => key.Value);
+    }
+
+    public byte? GetPressedKeyCode()
+    {
+      foreach (var key in _keys.Where(key => key.Value))
       {
-        case Keys.D0:
-          return 0x0;
-        case Keys.D1:
-          return 0x1;
-        case Keys.D2:
-          return 0x2;
-        case Keys.D3:
-          return 0x3;
-        case Keys.D4:
-          return 0x4;
-        case Keys.D5:
-          return 0x5;
-        case Keys.D6:
-          return 0x6;
-        case Keys.D7:
-          return 0x7;
-        case Keys.D8:
-          return 0x8;
-        case Keys.D9:
-          return 0x9;
-        case Keys.A:
-          return 0xA;
-        case Keys.B:
-          return 0xB;
-        case Keys.C:
-          return 0xC;
-        case Keys.D:
-          return 0xD;
-        case Keys.E:
-          return 0xE;
-        case Keys.F:
-          return 0xF;
-        default:
-          throw new NotImplementedException();
+        return key.Key;
       }
+
+      return null;
+    }
+
+    public static byte? GetKeyCode(Keys key)
+    {
+      return key switch
+      {
+        Keys.D0 => 0x0,
+        Keys.D1 => 0x1,
+        Keys.D2 => 0x2,
+        Keys.D3 => 0x3,
+        Keys.D4 => 0x4,
+        Keys.D5 => 0x5,
+        Keys.D6 => 0x6,
+        Keys.D7 => 0x7,
+        Keys.D8 => 0x8,
+        Keys.D9 => 0x9,
+        Keys.A => 0xA,
+        Keys.B => 0xB,
+        Keys.C => 0xC,
+        Keys.D => 0xD,
+        Keys.E => 0xE,
+        Keys.F => 0xF,
+        _ => null
+      };
     }
   }
 }

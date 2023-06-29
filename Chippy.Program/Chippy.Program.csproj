@@ -11,4 +11,10 @@
     <PackageReference Include="OpenTK" Version="4.7.7" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Processor.Instructions.cs">
+      <DependentUpon>Processor.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
 </Project>

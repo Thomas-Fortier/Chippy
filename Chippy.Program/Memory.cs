@@ -1,6 +1,6 @@
 ﻿namespace Chippy.Program
 {
-  internal class Memory
+  public class Memory
   {
     private readonly byte[] _data;
     private readonly Stack<ushort> _stack;
@@ -35,7 +35,7 @@
     {
       _stack.Clear();
 
-      for (int index = 0; index < _data.Length; index++)
+      for (var index = 0; index < _data.Length; index++)
       {
         _data[index] = 0;
       }
